@@ -1,6 +1,7 @@
 import { CAT_ASSETS } from './assets/cats.js';
+import { MAX_BET, MIN_BET, clampBet, decrementBet, incrementBet } from './game/bet.js';
 import { BANKROLL_BASE, canTopOff, formatBankroll, topOff } from './game/bankroll.js';
-import { createReelStrip, evaluateSpin, spinReels } from './game/reels.js';
+import { PAYLINES, createReelStrip, evaluateSpin, spinReels } from './game/reels.js';
 
 let bankroll = BANKROLL_BASE;
 
@@ -8,6 +9,9 @@ const reelStrip = createReelStrip(CAT_ASSETS);
 
 const reelsEl = document.getElementById('reels');
 const betInputEl = document.getElementById('bet');
+const betDownButtonEl = document.getElementById('betDownButton');
+const betUpButtonEl = document.getElementById('betUpButton');
+const betMaxButtonEl = document.getElementById('betMaxButton');
 const spinButtonEl = document.getElementById('spinButton');
 const topOffButtonEl = document.getElementById('topOffButton');
 const resultEl = document.getElementById('result');
@@ -30,7 +34,8 @@ function emojiFallback(symbol) {
 }
 
 function renderSymbols(symbols, options = {}) {
-  const { spinning = false, settlingReel = null } = options;
+  const { spinning = false, settlingReel = null, winningLineIds = [] } = options;
+  const winningLineIdSet = new Set(winningLineIds);
   reelsEl.innerHTML = '';
   for (let i = 0; i < symbols.length; i += 1) {
     const symbol = symbols[i];
@@ -42,6 +47,13 @@ function renderSymbols(symbols, options = {}) {
     }
     if (settlingReel === i) {
       card.classList.add('is-settling');
+    }
+
+    for (const payline of PAYLINES) {
+      if (winningLineIdSet.has(payline.id) && payline.indexes.includes(i)) {
+        card.classList.add('win-line');
+        card.classList.add(`win-line-${payline.id}`);
+      }
     }
 
     const img = document.createElement('img');
@@ -70,6 +82,17 @@ function renderSymbols(symbols, options = {}) {
 function updateBankroll() {
   bankrollEl.textContent = formatBankroll(bankroll);
   topOffButtonEl.disabled = !canTopOff(bankroll);
+}
+
+function updateBetInput(value) {
+  const bet = clampBet(value, MIN_BET, MAX_BET);
+  betInputEl.value = String(bet);
+  return bet;
+}
+
+function setSpinControlsDisabled(disabled) {
+  spinButtonEl.disabled = disabled;
+  betMaxButtonEl.disabled = disabled;
 }
 
 function topOffBankroll() {
@@ -110,14 +133,16 @@ async function spin() {
     return;
   }
 
-  const bet = Math.max(1, Number.parseInt(betInputEl.value, 10) || 1);
+  const bet = updateBetInput(betInputEl.value);
+
   if (bet > bankroll) {
     resultEl.textContent = 'Not enough bankroll for that bet.';
     return;
   }
 
-  spinButtonEl.disabled = true;
+  setSpinControlsDisabled(true);
   spinButtonEl.textContent = 'Spinning...';
+  betMaxButtonEl.textContent = 'Max Spinning...';
   resultEl.textContent = 'Reels spinning...';
 
   bankroll -= bet;
@@ -128,15 +153,44 @@ async function spin() {
 
   const outcome = evaluateSpin(symbols, bet);
   bankroll += outcome.payout;
+  renderSymbols(symbols, { winningLineIds: outcome.winningLines.map((line) => line.id) });
 
   resultEl.textContent = `${outcome.reason} | Multiplier x${outcome.multiplier} | Payout $${outcome.payout.toLocaleString()}`;
   updateBankroll();
 
-  spinButtonEl.disabled = false;
+  setSpinControlsDisabled(false);
   spinButtonEl.textContent = 'Spin';
+  betMaxButtonEl.textContent = 'Bet Max + Spin';
+}
+
+function incrementBetControl() {
+  const current = clampBet(betInputEl.value, MIN_BET, MAX_BET);
+  const next = incrementBet(current, 1, MAX_BET);
+  betInputEl.value = String(next);
+}
+
+function decrementBetControl() {
+  const current = clampBet(betInputEl.value, MIN_BET, MAX_BET);
+  const next = decrementBet(current, 1, MIN_BET);
+  betInputEl.value = String(next);
+}
+
+async function betMaxAndSpin() {
+  if (spinButtonEl.disabled) {
+    return;
+  }
+
+  betInputEl.value = String(MAX_BET);
+  await spin();
 }
 
 spinButtonEl.addEventListener('click', spin);
+betDownButtonEl.addEventListener('click', decrementBetControl);
+betUpButtonEl.addEventListener('click', incrementBetControl);
+betMaxButtonEl.addEventListener('click', () => {
+  void betMaxAndSpin();
+});
 topOffButtonEl.addEventListener('click', topOffBankroll);
 updateBankroll();
+updateBetInput(betInputEl.value);
 renderSymbols(spinReels(reelStrip, REEL_COUNT));

@@ -62,6 +62,12 @@ h1 {
   flex-wrap: wrap;
 }
 
+.bet-hint {
+  color: #d0d5ff;
+  opacity: 0.9;
+  font-size: 0.82rem;
+}
+
 input,
 button {
   font: inherit;
@@ -170,6 +176,21 @@ button:disabled {
   box-shadow:
     0 0 0 2px rgba(255, 211, 107, 0.45),
     0 14px 30px rgba(0, 0, 0, 0.5);
+}
+
+.symbol-card.win-line {
+  box-shadow:
+    0 0 0 2px rgba(255, 211, 107, 0.9),
+    0 0 18px rgba(255, 211, 107, 0.5),
+    0 8px 18px rgba(0, 0, 0, 0.45);
+}
+
+.symbol-card.win-line-top,
+.symbol-card.win-line-middle,
+.symbol-card.win-line-bottom,
+.symbol-card.win-line-diagDown,
+.symbol-card.win-line-diagUp {
+  border-color: #ffd36b;
 }
 
 @keyframes reelPulse {

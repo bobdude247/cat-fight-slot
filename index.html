@@ -14,8 +14,12 @@
       <section class="panel">
         <label>
           Bet
-          <input id="bet" type="number" min="1" value="1" />
+          <input id="bet" type="number" min="1" max="10" value="1" />
         </label>
+        <small class="bet-hint">Min $1, Max $10</small>
+        <button id="betDownButton" type="button">Bet -1</button>
+        <button id="betUpButton" type="button">Bet +1</button>
+        <button id="betMaxButton" type="button">Bet Max + Spin</button>
         <button id="spinButton">Spin</button>
         <button id="topOffButton" type="button">Top Off to 10,000</button>
       </section>

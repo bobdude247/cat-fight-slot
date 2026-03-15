@@ -5,6 +5,14 @@ export const SYMBOL_TYPES = Object.freeze({
 
 export const DEFAULT_REEL_COUNT = 3;
 
+export const PAYLINES = Object.freeze([
+  { id: 'top', label: 'Top Row', indexes: [0, 1, 2] },
+  { id: 'middle', label: 'Middle Row', indexes: [3, 4, 5] },
+  { id: 'bottom', label: 'Bottom Row', indexes: [6, 7, 8] },
+  { id: 'diagDown', label: 'Diagonal ↘', indexes: [0, 4, 8] },
+  { id: 'diagUp', label: 'Diagonal ↗', indexes: [2, 4, 6] },
+]);
+
 function randomInt(maxExclusive) {
   return Math.floor(Math.random() * maxExclusive);
 }
@@ -49,18 +57,18 @@ export function evaluateSpin(symbols, bet = 1) {
     throw new Error('symbols must be a non-empty array');
   }
 
-  if (symbols.length % 3 !== 0) {
-    throw new Error('symbols length must be divisible by 3 for payline evaluation');
+  if (symbols.length !== 9) {
+    throw new Error('symbols length must be exactly 9 for 3x3 payline evaluation');
   }
 
-  const rowCount = symbols.length / 3;
   let multiplier = 0;
   const reasons = [];
+  const winningLines = [];
 
-  for (let rowIndex = 0; rowIndex < rowCount; rowIndex += 1) {
-    const row = symbols.slice(rowIndex * 3, rowIndex * 3 + 3);
+  for (const payline of PAYLINES) {
+    const lineSymbols = payline.indexes.map((index) => symbols[index]);
     const byCat = new Map();
-    for (const symbol of row) {
+    for (const symbol of lineSymbols) {
       byCat.set(symbol.catId, (byCat.get(symbol.catId) ?? 0) + 1);
     }
 
@@ -69,14 +77,26 @@ export function evaluateSpin(symbols, bet = 1) {
 
     if (top === 3) {
       multiplier += 12;
-      reasons.push(`Row ${rowIndex + 1}: 3 of a kind`);
+      reasons.push(`${payline.label}: 3 of a kind`);
+      winningLines.push({
+        id: payline.id,
+        label: payline.label,
+        indexes: payline.indexes,
+        kind: 'threeKind',
+      });
     } else if (top === 2) {
       multiplier += 4;
-      reasons.push(`Row ${rowIndex + 1}: 2 of a kind`);
+      reasons.push(`${payline.label}: 2 of a kind`);
+      winningLines.push({
+        id: payline.id,
+        label: payline.label,
+        indexes: payline.indexes,
+        kind: 'twoKind',
+      });
     }
   }
 
   const payout = bet * multiplier;
   const reason = reasons.length > 0 ? reasons.join(' | ') : 'No line match';
-  return { multiplier, payout, reason };
+  return { multiplier, payout, reason, winningLines };
 }

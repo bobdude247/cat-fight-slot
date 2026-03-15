@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { createReelStrip, evaluateSpin, spinReels } from '../src/game/reels.js';
+import { PAYLINES, createReelStrip, evaluateSpin, spinReels } from '../src/game/reels.js';
 
 const cats = [
   { id: 'luna', name: 'Luna', fullBody: 'luna-full.png', faceCloseUp: 'luna-face.png' },
@@ -62,8 +62,12 @@ test('evaluateSpin scores one pair', () => {
     { catId: 'nova' },
   ];
   const outcome = evaluateSpin(symbols, 5);
-  assert.equal(outcome.multiplier, 8);
-  assert.equal(outcome.payout, 40);
+  assert.equal(outcome.multiplier, 12);
+  assert.equal(outcome.payout, 60);
+  assert.deepEqual(
+    outcome.winningLines.map((line) => line.id),
+    ['top', 'middle', 'diagUp'],
+  );
 });
 
 test('evaluateSpin scores 3 of a kind', () => {
@@ -79,6 +83,22 @@ test('evaluateSpin scores 3 of a kind', () => {
     { catId: 'milo' },
   ];
   const outcome = evaluateSpin(symbols, 2);
-  assert.equal(outcome.multiplier, 16);
-  assert.equal(outcome.payout, 32);
+  assert.equal(outcome.multiplier, 20);
+  assert.equal(outcome.payout, 40);
+  assert.deepEqual(
+    outcome.winningLines.map((line) => line.id),
+    ['top', 'middle', 'diagUp'],
+  );
+});
+
+test('evaluateSpin throws when symbol count is not a 3x3 grid', () => {
+  assert.throws(
+    () => evaluateSpin([{ catId: 'luna' }, { catId: 'milo' }, { catId: 'nova' }], 1),
+    /exactly 9/,
+  );
+});
+
+test('PAYLINES defines five lines for a 3x3 grid', () => {
+  assert.equal(PAYLINES.length, 5);
+  assert.deepEqual(PAYLINES.map((line) => line.id), ['top', 'middle', 'bottom', 'diagDown', 'diagUp']);
 });
