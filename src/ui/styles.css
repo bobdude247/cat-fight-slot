@@ -1,0 +1,215 @@
+:root {
+  color-scheme: dark;
+  font-family: Inter, system-ui, sans-serif;
+  --gold: #ffd36b;
+  --cabinet: #1b1731;
+  --cabinet-accent: #32285d;
+  --screen: #0d0a1f;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background:
+    radial-gradient(circle at 30% 10%, #35296b 0%, rgba(53, 41, 107, 0) 45%),
+    radial-gradient(circle at 80% 90%, #1e4d7d 0%, rgba(30, 77, 125, 0) 40%),
+    #090913;
+  color: #f2f4ff;
+  overflow: hidden;
+}
+
+.app {
+  box-sizing: border-box;
+  width: min(980px, 100vw);
+  max-height: 100dvh;
+  margin: 0 auto;
+  padding: 12px;
+  border-radius: 16px;
+  border: 2px solid var(--cabinet-accent);
+  background: linear-gradient(180deg, rgba(46, 32, 86, 0.82), rgba(18, 14, 35, 0.95));
+  box-shadow:
+    0 14px 36px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  display: grid;
+  grid-template-rows: auto auto auto 1fr;
+  gap: 8px;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(1.15rem, 2.7vw, 1.8rem);
+  line-height: 1;
+  letter-spacing: 0.03em;
+  color: var(--gold);
+  text-shadow: 0 0 18px rgba(255, 211, 107, 0.45);
+}
+
+.subtitle {
+  margin: 0;
+  font-size: clamp(0.72rem, 1.8vw, 0.92rem);
+  color: #d5d8ff;
+}
+
+.panel {
+  margin: 0;
+  padding: 8px 10px;
+  border: 1px solid #3e3567;
+  border-radius: 10px;
+  background: rgba(9, 8, 20, 0.7);
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+input,
+button {
+  font: inherit;
+}
+
+button {
+  background: linear-gradient(180deg, #8f89ff, #5b57d8);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 7px 12px;
+  cursor: pointer;
+  font-weight: 700;
+  box-shadow: 0 6px 14px rgba(91, 87, 216, 0.4);
+}
+
+button:hover {
+  transform: translateY(-1px);
+}
+
+button:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.reels {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  padding: 8px;
+  border: 2px solid rgba(255, 211, 107, 0.35);
+  border-radius: 12px;
+  background:
+    linear-gradient(180deg, rgba(255, 211, 107, 0.08), rgba(255, 211, 107, 0.01)),
+    var(--screen);
+  box-shadow: inset 0 0 0 2px rgba(255, 211, 107, 0.12);
+  min-height: 0;
+}
+
+.symbol-card {
+  display: grid;
+  grid-template-rows: 1fr auto;
+  background: #1a1633;
+  border: 1px solid #4a3d7a;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+
+.symbol-card img,
+.fallback {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: clamp(58px, 11.5vh, 102px);
+  object-fit: cover;
+  background: #0f0f18;
+  font-size: 0.92rem;
+}
+
+.symbol-card.symbol-fullBody img {
+  object-fit: contain;
+  padding: 4px;
+  object-position: center bottom;
+  transform: scale(1.02);
+  transform-origin: center 88%;
+  background:
+    linear-gradient(180deg, #a6d9a1 0%, #98d08f 72%, #89c37e 100%),
+    #0f0f18;
+}
+
+.symbol-card.symbol-faceCloseUp img {
+  object-fit: contain;
+  padding: 8px;
+  object-position: center 50%;
+  transform: scale(0.96);
+  transform-origin: center center;
+  filter: contrast(1.03) saturate(1.04);
+  background: #d5d9de;
+}
+
+.caption {
+  padding: 4px 6px;
+  font-size: clamp(0.56rem, 1.5vw, 0.76rem);
+  font-weight: 600;
+  color: #dcddff;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-height: 1.2em;
+}
+
+.symbol-card.is-spinning {
+  animation: reelPulse 800ms ease-in-out infinite;
+}
+
+.symbol-card.is-spinning img,
+.symbol-card.is-spinning .fallback {
+  filter: saturate(1.03) brightness(1.02);
+}
+
+.symbol-card.is-settling {
+  animation: reelSettle 260ms ease-out;
+  box-shadow:
+    0 0 0 2px rgba(255, 211, 107, 0.45),
+    0 14px 30px rgba(0, 0, 0, 0.5);
+}
+
+@keyframes reelPulse {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-1px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+@keyframes reelSettle {
+  0% {
+    transform: translateY(-16px) scale(1.02);
+  }
+  70% {
+    transform: translateY(3px) scale(1.01);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 900px) {
+  .app {
+    padding: 8px;
+    gap: 6px;
+  }
+
+  .symbol-card img,
+  .fallback {
+    height: clamp(52px, 10.2vh, 86px);
+  }
+
+  .caption {
+    display: block;
+    font-size: 0.55rem;
+    padding: 3px 4px;
+  }
+}
